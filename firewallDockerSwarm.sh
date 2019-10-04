@@ -3,9 +3,6 @@
 # Add iptables variable
 IPT=iptables
 
-# Flush existing firewall rules on filter table
-#$IPT -F
-
 function setPolicy(){
 	# Set deafult policies
 	$IPT -P INPUT DROP
@@ -43,7 +40,10 @@ function setWorker(){
 	$IPT -I INPUT -p tcp -m conntrack --ctstate NEW -m multiport --dports 80,443 -j ACCEPT
 }
 
-setPolicy
+function doFlush(){
+	$IPT -F INPUT
+	$IPT -F OUTPUT
+}
 
 case "$1" in 
 	manager)
@@ -56,8 +56,11 @@ case "$1" in
 		setGeneral
 		setWorker
 		;;
+	flush)
+		doFlush
+		;;
 	*)
-	echo $"Usage: $0 {manager|worker}"
+	echo $"Usage: $0 {manager|worker|flush}"
 	exit 1
 esac
 
