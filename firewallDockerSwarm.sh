@@ -20,10 +20,12 @@ function setGeneral(){
 	$IPT -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 	# Allow SSH IN GENRRAL
-	$IPT -A INPUT -p tcp -m conntrack --ctstate NEW --dport 22 -j ACCEPT 
+	$IPT -A INPUT -p tcp -m conntrack --ctstate NEW --dport 22 -j ACCEPT
 
 	# Allow icmp traffic
-	$IPT -A INPUT -p icmp -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j ACCEPT
+	$IPT -A INPUT -p icmp -m icmp --icmp-type address-mask-request -j DROP
+	$IPT -A INPUT -p icmp -m icmp --icmp-type timestamp-request -j DROP
+	$IPT -A INPUT -p icmp -m conntrack --ctstate NEW -m icmp --icmp-type 8 -m limit --limit 1/second -j ACCEPT
 }
 
 function setManager(){
@@ -45,7 +47,7 @@ function doFlush(){
 	$IPT -F OUTPUT
 }
 
-case "$1" in 
+case "$1" in
 	manager)
 		setPolicy
 		setGeneral
